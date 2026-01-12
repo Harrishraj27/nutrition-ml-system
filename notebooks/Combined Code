@@ -1,0 +1,65 @@
+import joblib
+import random
+import torch
+from torchvision import transforms, models
+from PIL import Image
+import matplotlib.pyplot as plt
+import pandas as pd
+import re
+import collections
+
+# Load models and preprocessors
+nutrition_models = joblib.load('Nutrition_Prediction.joblib')  # For nutrition-related predictions
+diabetes_model_data = joblib.load("diabetes_risk_model.pkl")  # For diabetes risk prediction
+mental_health_model_data = joblib.load('Mental_health.pkl')  # For mental health prediction
+nutrition_data = pd.read_csv('nutrition_data.csv')
+
+user_input = pd.DataFrame([{
+    'Age': 40, 'Weight': 95, 'Height': 165, 'Caloric_Goal': 500, 'Carb_Goal': 280, 
+    'Protein_Goal': 180, 'Fat_Goal': 85, 'Exercise_Duration': 50, 'Calories_Burned': 400, 
+    'Water_Intake': 3.0, 'Sleep_Duration': 6, 'Vitamin_Intake': 1.8, 'Mineral_Intake': 2.2, 
+    'Activity_Level': 'Moderately Active', 'Meal_Type': 'Breakfast', 
+    'Chronic_Conditions': 'None', 'Allergies': 'None', 'Medications': 'None', 
+    'Fiber_Goal': 10.0, 'Sugar_Goal': 8.0, 'Sodium_Goal': 900.0, 'Calories': 400, 
+    'Proteins': 150, 'Carbohydrates': 230, 'Fats': 70, 'Fiber': 8.0, 'Sugar': 7.0, 'Sodium': 850.0}])
+
+# Load the ResNet152 model
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model = models.resnet152(weights=None)  # No pretrained weights since it's custom-trained
+model.fc = torch.nn.Linear(model.fc.in_features, 101)  # Output layer for 101 classes
+model = model.to(device)
+
+# Load checkpoint
+checkpoint_path = "model_checkpoint5446.pth"
+checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=True)
+
+# Remove 'module.' prefix if needed
+if isinstance(checkpoint, collections.OrderedDict):
+    checkpoint = {k.replace('module.', ''): v for k, v in checkpoint.items()}
+
+model.load_state_dict(checkpoint)
+model.eval()
+
+# Define transformations
+transform_test = transforms.Compose([
+    transforms.Resize(256),
+    transforms.CenterCrop(224),
+    transforms.ToTensor(),
+    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+])
+
+# Food class labels
+class_labels = [
+    "Apple pie", "Baby back ribs", "Baklava", "Beef carpaccio", "Beef tartare",
+    "Beet salad", "Beignets", "Bibimbap", "Bread pudding", "Breakfast burrito",
+    "Bruschetta", "Caesar salad", "Cannoli", "Caprese salad", "Carrot cake",
+    "Ceviche", "Cheesecake", "Cheese plate", "Chicken curry", "Chicken quesadilla",
+    "Chicken wings", "Chocolate cake", "Chocolate mousse", "Churros", "Clam chowder",
+    "Club sandwich", "Crab cakes", "Creme brulee", "Croque madame", "Cup cakes",
+    "Deviled eggs", "Donuts", "Dumplings", "Edamame", "Eggs benedict", "Escargots",
+    "Falafel", "Filet mignon", "Fish and chips", "Foie gras", "French fries",
+    "French onion soup", "French toast", "Fried calamari", "Fried rice",
+    "Frozen yogurt", "Garlic bread", "Gnocchi", "Greek salad",
+    "Grilled cheese sandwich", "Grilled salmon", "Guacamole", "Gyoza", "Hamburger",
+    "Hot and sour soup", "Hot dog", "Huevos rancheros", "Hummus", "Ice cream",
+    print(alert)
