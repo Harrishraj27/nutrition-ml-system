@@ -1,0 +1,66 @@
+import joblib
+import pandas as pd
+
+# Load all models from 'Nutrition_Prediction.joblib'
+loaded_models = joblib.load('Nutrition_Prediction.joblib')
+
+# Define a list of meals for the day
+# Each meal is represented as a DataFrame with the same structure as the user input
+
+daily_meals = pd.DataFrame([
+    # Breakfast
+    {
+        'Age': 30, 'Weight': 75, 'Height': 170, 'Caloric_Goal': 2000, 'Carb_Goal': 250, 
+        'Protein_Goal': 150, 'Fat_Goal': 70, 'Exercise_Duration': 30, 'Calories_Burned': 250, 
+        'Water_Intake': 2, 'Sleep_Duration': 7, 'Vitamin_Intake': 1.5, 'Mineral_Intake': 1.5, 
+        'Activity_Level': 'Moderately Active', 'Meal_Type': 'Breakfast', 
+        'Chronic_Conditions': 'None', 'Allergies': 'None', 'Medications': 'None'
+    },
+    # Lunch
+    {
+        'Age': 30, 'Weight': 75, 'Height': 170, 'Caloric_Goal': 2000, 'Carb_Goal': 250, 
+        'Protein_Goal': 150, 'Fat_Goal': 70, 'Exercise_Duration': 45, 'Calories_Burned': 350, 
+        'Water_Intake': 2.5, 'Sleep_Duration': 7, 'Vitamin_Intake': 1.8, 'Mineral_Intake': 2, 
+        'Activity_Level': 'Moderately Active', 'Meal_Type': 'Lunch', 
+        'Chronic_Conditions': 'None', 'Allergies': 'None', 'Medications': 'None'
+    },
+    # Dinner
+    {
+        'Age': 30, 'Weight': 75, 'Height': 170, 'Caloric_Goal': 2000, 'Carb_Goal': 250, 
+        'Protein_Goal': 150, 'Fat_Goal': 70, 'Exercise_Duration': 40, 'Calories_Burned': 300, 
+        'Water_Intake': 2.0, 'Sleep_Duration': 7, 'Vitamin_Intake': 2.0, 'Mineral_Intake': 1.8, 
+        'Activity_Level': 'Moderately Active', 'Meal_Type': 'Dinner', 
+        'Chronic_Conditions': 'None', 'Allergies': 'None', 'Medications': 'None'
+    }
+])
+
+# Define variables to store the total nutritional values for the day
+total_calories = 0
+total_carbs = 0
+total_proteins = 0
+total_fats = 0
+
+# Predict nutritional values for each meal
+print("\nPredicted Nutritional Values for Today's Meals:")
+for meal in daily_meals.itertuples(index=False):
+    meal_data = pd.DataFrame([meal._asdict()])
+    
+    print(f"\n{meal_data['Meal_Type'][0]}:")
+    
+    for target in loaded_models.keys():
+        best_model = loaded_models[target]
+        
+        # Transform the user input
+        meal_transformed = best_model.named_steps['preprocessor'].transform(meal_data)
+        
+        # Make the prediction for the target variable
+        prediction = best_model.named_steps['model'].predict(meal_transformed)
+        predicted_value = prediction[0]
+        
+        # Adjust the prediction based on the deficiency
+        deficiency = deficiency_report.get(target, {}).get('deficiency', 0)
+        adjusted_value = predicted_value + deficiency
+        
+        print(f"{target}: {adjusted_value:.2f} (Adjusted for deficiency)")
+
+print(f"Total Fats: {total_fats:.2f} g")
