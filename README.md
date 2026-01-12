@@ -63,6 +63,8 @@ This project combines **predictive modeling, deficiency-based adjustments, and r
 
 ```bash
 pip install -r requirements.txt
+```
+---
 
 ## Output
 
