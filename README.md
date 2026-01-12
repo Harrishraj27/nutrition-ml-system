@@ -1,33 +1,63 @@
-## 🧠 ML-Based Personalized Nutrition & Health Recommendation System
+# 🧠 ML-Based Personalized Nutrition & Health Recommendation System
 
-This project is an end-to-end Machine Learning system that predicts nutritional requirements, recommends meals, and provides health insights based on user data.
+An end-to-end **Machine Learning–powered nutrition and health recommendation system** that provides personalized meal planning, nutrient predictions, and health insights based on user lifestyle and dietary data.
 
-### 📌 Features
-- Predicts macro & micronutrient needs for upcoming meals
-- Adjusts recommendations based on nutritional deficiencies
-- BMI calculation with health categorization
-- Meal-wise nutrition optimization
-- Health alerts for unmet goals
-- Disease risk prediction (Diabetes, Hypertension, Obesity, etc.)
-- Mental health risk assessment
+This project combines **predictive modeling, deficiency-based adjustments, and rule-based health logic** to bridge the gap between ML outputs and real-world health decisions.
 
-### 📊 Sample Outputs
+---
+
+## 🚀 Key Features
+
+### 🍽 Personalized Nutrition Prediction
+- Predicts **Calories, Proteins, Carbohydrates, Fats, Fiber, Sugar, and Sodium**
+- Uses trained ML models with preprocessing pipelines
+- Adjusts predictions dynamically based on **nutrient deficiencies or excess intake**
+
+### 🥗 Smart Meal Recommendation
+- Recommends meals optimized for nutritional gaps
+- Generates **meal-wise nutrition summaries**
+- Ensures balanced macro & micronutrient distribution
+
+### 🧍 Health & Lifestyle Analysis
+- **BMI calculation** with health category classification
+- Personalized BMI-based recommendations
+- Hydration and sleep quality evaluation
+
+### 🚨 Health Alerts System
+- Alerts users when daily nutrition goals are not met
+- Flags health risks related to diet and lifestyle
+
+### 🩺 Disease Risk Prediction
+- Diabetes
+- Hypertension
+- Obesity
+- High Cholesterol
+- Arthritis
+- Asthma
+
+### 🧠 Mental Health Prediction
+- Mental health risk classification
+- Probability-based risk assessment
+
+---
+
+## 📊 Sample Outputs
 - Nutrient predictions for next meals
-- Personalized meal recommendations
+- Adjusted nutrition targets based on deficiencies
+- Meal-wise food recommendations
 - BMI category & lifestyle suggestions
-- Health alerts based on dietary gaps
+- Health alerts and risk indicators
 
-### 🛠 Tech Stack
-- Python
-- Scikit-learn
-- Pandas & NumPy
-- Joblib
-- Jupyter Notebook
+---
 
-### 📂 Notebook
-- `notebooks/nutrition-ml-system.ipynb` – Main implementation and results
+## 🛠 Tech Stack
+- **Python**
+- **Scikit-learn**
+- **Pandas & NumPy**
+- **Joblib**
+- **Matplotlib & Seaborn**
+- **Jupyter Notebook**
 
-### 🚀 Future Improvements
-- Web app deployment
-- Real-time user input integration
-- Model performance optimization
+---
+
+## 📂 Project Structure
