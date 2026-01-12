@@ -1,0 +1,39 @@
+import joblib
+
+# Save the trained models for each target
+for target in targets:
+    model_filename = f"{target}_model.joblib"
+    joblib.dump(models[target], model_filename)
+    print(f"Saved {target} model to {model_filename}")
+
+# Load the saved models
+loaded_models = {}
+for target in targets:
+    model_filename = f"{target}_model.joblib"
+    loaded_models[target] = joblib.load(model_filename)
+    print(f"Loaded {target} model from {model_filename}")
+
+
+import joblib
+
+# Save all models in one file
+all_models = {}
+
+# Add all the trained models to the dictionary
+for target in targets:
+    all_models[target] = models[target]
+
+# Save the dictionary with all models to 'Nutrition_Prediction.joblib'
+joblib.dump(all_models, 'Nutrition_Prediction.joblib')
+print("All models have been saved in one file: 'Nutrition_Prediction.joblib'")
+
+
+# Load all models from 'Nutrition_Prediction.joblib'
+loaded_models = joblib.load('Nutrition_Prediction.joblib')
+print("All models have been loaded successfully.")
+
+# Access the model for a specific target
+target = 'Sodium'  
+model_for_target = loaded_models[target]
+print(f"Loaded model for {target}")
+
