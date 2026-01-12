@@ -65,3 +65,74 @@ def train_class_specific_models(X, y, conditions):
         # Split into train and test sets
         X_train, X_test, y_train, y_test = train_test_split(
 class_specific_reports = train_class_specific_models(X_transformed, y, conditions)
+
+
+# save the model
+
+
+import joblib
+
+# Dictionary to store all models and the preprocessor
+models_to_save = {'models': {}, 'preprocessor': preprocessor}
+
+# Save each trained model into the dictionary
+for idx, condition in enumerate(conditions):
+    # Train your models for each condition as described earlier (assuming `clf` is the trained model)
+    y_condition = y.iloc[:, idx]
+    ros = RandomOverSampler(random_state=42)
+    X_resampled, y_resampled = ros.fit_resample(X_transformed, y_condition)
+    X_train, _, y_train, _ = train_test_split(
+        X_resampled, y_resampled, test_size=0.2, random_state=42, stratify=y_resampled
+    )
+    
+    clf = RandomForestClassifier(random_state=42, n_estimators=100, class_weight="balanced")
+    clf.fit(X_train, y_train)
+    
+    # Store the model in the dictionary
+    models_to_save['models'][condition] = clf
+
+# Save the dictionary to a single file
+output_file = "diabetes_risk_model.pkl"
+joblib.dump(models_to_save, output_file)
+
+print(f"All models and the preprocessor have been saved to {output_file}.")
+
+import joblib
+import pandas as pd
+
+# Load the saved models and preprocessor
+loaded_data = joblib.load("diabetes_risk_model.pkl")
+models = loaded_data['models']  
+preprocessor = loaded_data['preprocessor'] 
+
+# Example user input
+user_input = {
+    "Age": 45,
+    "Weight": 70,
+    "Height": 170,
+    "Calories": 2000,
+    "Carbohydrates": 250,
+    "Proteins": 70,
+    "Fats": 50,
+    "Sleep_Duration": 7,
+    "Water_Intake": 2.5,
+    "BMI": 70 / (1.7 ** 2), 
+    "Calories_per_Activity": 2000 / 3 
+}
+
+# Convert the input to a DataFrame
+user_df = pd.DataFrame([user_input])
+
+# Preprocess the input using the loaded preprocessor
+user_transformed = preprocessor.transform(user_df)
+
+# Predict for each condition
+predictions = {}
+for condition, model in models.items():
+    prediction = model.predict(user_transformed)
+    predictions[condition] = "Yes" if prediction[0] == 1 else "No"
+
+# Output the predictions
+print("Predicted Conditions:")
+for condition, result in predictions.items():
+    print(f"{condition}: {result}")
