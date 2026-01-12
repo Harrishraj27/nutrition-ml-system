@@ -1,0 +1,155 @@
+import pandas as pd
+import numpy as np
+from lightgbm import LGBMClassifier
+from xgboost import XGBClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import VotingClassifier
+from sklearn.metrics import accuracy_score, classification_report, roc_auc_score, f1_score, precision_recall_curve
+from sklearn.model_selection import train_test_split
+from sklearn.feature_selection import SelectFromModel
+from sklearn.ensemble import RandomForestClassifier
+from imblearn.combine import SMOTETomek
+
+# Binary target for mental health status
+data['Mental_Health_Status'] = data['Medications'].apply(lambda x: 1 if 'Antidepressants' in str(x) else 0)
+data['Gender'] = data['Gender'].map({'Male': 0, 'Female': 1}).fillna(-1)
+
+# Feature Engineering
+data['Calories_Per_Exercise'] = data['Calories'] / (data['Exercise_Duration'] + 1)
+data['Calories_Per_Sleep'] = data['Calories'] / (data['Sleep_Duration'] + 1)
+data['Age_Binned'] = pd.cut(data['Age'], bins=[0, 18, 35, 50, 65, 100], labels=False, include_lowest=True)
+
+# Define features and target variable
+features = ['Age', 'Weight', 'Height', 'Calories', 'Carbohydrates', 'Proteins',
+            'Fats', 'Exercise_Duration', 'Calories_Burned', 'Water_Intake',
+            'Sleep_Duration', 'Gender', 'Activity_Level', 'Meal_Type',
+            'Calories_Per_Exercise', 'Calories_Per_Sleep', 'Age_Binned']
+target = 'Mental_Health_Status'
+
+X = data[features]
+y = data[target]
+
+# One-hot encode categorical features
+categorical_features = ['Activity_Level', 'Meal_Type']
+X = pd.get_dummies(X, columns=categorical_features, drop_first=True)
+
+# Handle missing values
+X.fillna(X.mean(), inplace=True)
+
+# Resampling using SMOTETomek
+smote_tomek = SMOTETomek(random_state=42)
+X_resampled, y_resampled = smote_tomek.fit_resample(X, y)
+
+# Feature Selection with RandomForest
+feature_selector = RandomForestClassifier(random_state=42)
+feature_selector.fit(X_resampled, y_resampled)
+important_features = SelectFromModel(feature_selector, threshold='mean').get_support()
+selected_features = X.columns[important_features]
+
+# Update dataset with selected features
+X_resampled = X_resampled[selected_features]
+X_test = X[selected_features]
+
+# Train-Test Split
+X_train, X_val, y_train, y_val = train_test_split(X_resampled, y_resampled, test_size=0.2, random_state=42)
+
+# Initialize individual models
+lgbm = LGBMClassifier(
+    boosting_type='gbdt',
+    objective='binary',
+    is_unbalance=True,
+    n_estimators=500,
+    learning_rate=0.05,
+    max_depth=10,
+    class_weight={0: 1, 1: 3},
+    random_state=42
+)
+
+xgb = XGBClassifier(
+    objective='binary:logistic',
+    scale_pos_weight=3,
+    n_estimators=500,
+    learning_rate=0.05,
+print(adjusted_classification_report)
+
+
+
+import joblib
+
+# Save the ensemble model, selected features, and preprocessor
+model_metadata = {
+    'model': ensemble,
+    'selected_features': selected_features,
+    'feature_selector': feature_selector
+}
+
+# Save the model to a file
+joblib.dump(model_metadata, 'Mental_health.pkl')
+
+print("Model and metadata saved successfully!")
+
+loaded_data = joblib.load('Mental_health.pkl')
+
+# Extract the model and features
+ensemble_model = loaded_data['model']
+selected_features = loaded_data['selected_features']
+
+#test the model 
+
+import joblib
+import pandas as pd
+
+# Load the saved model
+model_data = joblib.load('Mental_health.pkl')
+
+# Extract the model and selected features
+ensemble_model = model_data['model']
+selected_features = model_data['selected_features']
+
+# Example user input
+user_input = {
+    'Age': 28,
+    'Weight': 68,
+    'Height': 172,
+    'Calories': 1800,
+    'Carbohydrates': 220,
+    'Proteins': 65,
+    'Fats': 60,
+    'Exercise_Duration': 45,
+    'Calories_Burned': 400,
+    'Water_Intake': 2.8,
+    'Sleep_Duration': 7,
+    'Gender': 'Male',  
+    'Activity_Level': 'Very Active',  
+    'Meal_Type': 'Breakfast', 
+    'Calories_Per_Exercise': 40.0,  
+    'Calories_Per_Sleep': 257.14,  
+    'Age_Binned': 2  
+}
+
+# Convert Gender to numerical format
+user_input['Gender'] = 0 if user_input['Gender'] == 'Male' else 1
+
+# Convert input into a DataFrame
+user_df = pd.DataFrame([user_input])
+
+# One-hot encode categorical features
+user_df = pd.get_dummies(user_df, columns=['Activity_Level', 'Meal_Type'], drop_first=True)
+
+# Ensure the input columns align with the training data
+missing_cols = set(selected_features) - set(user_df.columns)
+for col in missing_cols:
+    user_df[col] = 0
+
+# Retain only the selected features
+user_df = user_df[selected_features]
+
+# Make predictions using the loaded ensemble model
+user_pred = ensemble_model.predict(user_df)
+user_pred_proba = ensemble_model.predict_proba(user_df)[:, 1]
+
+# Interpret and output the result
+status = "Risk" if user_pred[0] == 1 else "Not at risk"
+
+print(f"User mental health status: {status}")
+print(f"Prediction Probability: {user_pred_proba[0]:.2f}")
