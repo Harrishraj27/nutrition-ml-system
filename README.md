@@ -58,9 +58,14 @@ This project combines **predictive modeling, deficiency-based adjustments, and r
 - **Matplotlib & Seaborn**
 - **Jupyter Notebook**
 
----
 
 ## ⚙️ Installation
 
 ```bash
 pip install -r requirements.txt
+
+## Output
+
+![Screenshot 2026-01-12 134843](https://github.com/user-attachments/assets/9c32dd00-0667-4aaa-9cbc-68be9aea1186)
+![Screenshot 2026-01-12 134843](https://github.com/user-attachments/assets/ccfcb756-1409-4903-8079-c0b9639d0db3)
+
