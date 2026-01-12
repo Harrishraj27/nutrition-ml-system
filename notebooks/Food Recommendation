@@ -1,0 +1,69 @@
+import joblib
+import pandas as pd
+import random
+
+# Load the Nutrition Tracking Data
+nutrition_data = pd.read_csv('nutrition_data.csv')
+
+# Define class mappings
+class_mappings = {
+    "Caloric_Goal": "Calories",
+    "Protein_Goal": "Proteins",
+    "Carb_Goal": "Carbohydrates",
+    "Fat_Goal": "Fats",
+    "Fiber_Goal": "Fiber",
+    "Sugar_Goal": "Sugar",
+    "Sodium_Goal": "Sodium"
+}
+
+# Rename columns to match expected names
+nutrition_data.rename(columns={
+    'Dish': 'Food_Item',
+    'Carbs (g)': 'Carbohydrates',
+    'Protein (g)': 'Proteins',
+    'Fat (g)': 'Fats',
+    'Fiber (g)': 'Fiber',
+    'Sugar (g)': 'Sugar',
+    'Sodium (mg)': 'Sodium'
+}, inplace=True)
+
+# Load all models from 'Nutrition_Prediction.joblib'
+loaded_models = joblib.load('Nutrition_Prediction.joblib')
+
+# Preprocess the dataset
+def preprocess_data(data):
+    relevant_columns = ["Food_Item"] + list(class_mappings.values())
+    data = data[relevant_columns].dropna()
+    
+    for col in class_mappings.values():
+        data[col] = pd.to_numeric(data[col], errors='coerce')
+    
+    return data.dropna()
+
+available_foods = preprocess_data(nutrition_data)
+
+# Define a new user input
+user_input = pd.DataFrame([{
+    'Age': 40, 'Weight': 95, 'Height': 165, 'Caloric_Goal': 2200, 'Carb_Goal': 280, 
+    'Protein_Goal': 180, 'Fat_Goal': 85, 'Exercise_Duration': 50, 'Calories_Burned': 400, 
+    'Water_Intake': 3.0, 'Sleep_Duration': 6, 'Vitamin_Intake': 1.8, 'Mineral_Intake': 2.2, 
+    'Activity_Level': 'Moderately Active', 'Meal_Type': 'Breakfast', 
+    'Chronic_Conditions': 'None', 'Allergies': 'None', 'Medications': 'None'
+}])
+
+# Predict baseline nutrition values using the loaded models
+baseline_nutrition = {}
+for deficiency_key, model_target in class_mappings.items():
+    if model_target in loaded_models:
+        best_model = loaded_models[model_target]
+        user_input_transformed = best_model.named_steps['preprocessor'].transform(user_input)
+        prediction = best_model.named_steps['model'].predict(user_input_transformed)
+        baseline_nutrition[model_target] = prediction[0]
+    else:
+        print(f"Warning: No model found for {model_target}")
+
+# Print baseline predictions
+print("\nPredicted Nutritional Values for Next Meal:")
+for target, value in baseline_nutrition.items():
+    print(f"{target}: {value:.2f}")
+    print(f"Total Nutrition for {meal_type}: {total_nutrition.to_dict()}\n")
