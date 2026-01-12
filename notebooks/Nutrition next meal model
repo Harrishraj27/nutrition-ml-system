@@ -1,0 +1,89 @@
+# Load dataset
+file_path = "/mnt/data/nutrition_tracking_data.csv"
+data = pd.read_csv(file_path)
+
+# Identify non-numeric values in numeric columns
+numeric_cols = ['Age', 'Weight', 'Height', 'BMI', 'Exercise_Duration', 
+                'Calories_Burned', 'Water_Intake', 'Sleep_Duration', 
+                'Caloric_Goal', 'Carb_Goal', 'Protein_Goal', 'Fat_Goal',
+                'Exercise_Intensity', 'Protein_Carb_Ratio', 'Fat_Carb_Ratio']
+
+# Find problematic values
+for col in numeric_cols:
+    non_numeric = data[~data[col].astype(str).str.replace('.', '', 1).str.isnumeric()]
+    if not non_numeric.empty:
+        print(f"🚨 Non-numeric values found in '{col}':")
+        print(non_numeric[[col]].head())
+
+# Convert numeric columns properly
+data[numeric_cols] = data[numeric_cols].apply(pd.to_numeric, errors='coerce')
+
+# Handle missing values created after coercion
+data.fillna(data.median(), inplace=True)
+
+
+import pandas as pd
+import numpy as np
+from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.impute import SimpleImputer
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.metrics import mean_squared_error, r2_score
+
+# Load dataset
+file_path = "nutrition_tracking_data.csv"
+data = pd.read_csv(file_path)
+
+# Define features and targets
+features = ['Age', 'Weight', 'Height', 'Caloric_Goal', 'Carb_Goal', 'Protein_Goal', 'Fat_Goal', 
+            'Exercise_Duration', 'Calories_Burned', 'Water_Intake', 'Sleep_Duration', 
+            'Vitamin_Intake', 'Mineral_Intake', 'Activity_Level', 'Meal_Type', 
+            'Chronic_Conditions', 'Allergies', 'Medications']
+
+targets = ['Calories', 'Carbohydrates', 'Proteins', 'Fats', 'Fiber', 'Sugar', 'Sodium']
+
+# Clean numeric columns and handle non-numeric values
+numeric_cols = ['Age', 'Weight', 'Height', 'Caloric_Goal', 'Carb_Goal', 'Protein_Goal', 
+                'Fat_Goal', 'Exercise_Duration', 'Calories_Burned', 'Water_Intake', 
+                'Sleep_Duration', 'Vitamin_Intake', 'Mineral_Intake']
+
+# Convert numeric columns properly
+data[numeric_cols] = data[numeric_cols].apply(pd.to_numeric, errors='coerce')
+
+# Verify missing values in 'Vitamin_Intake' and 'Mineral_Intake'
+print(data[['Vitamin_Intake', 'Mineral_Intake']].isna().sum())
+
+# Handle missing values
+for col in numeric_cols:
+    if data[col].isnull().sum() > 0:
+        print(f"Filling missing values in {col} with median")
+        # If columns have at least some valid values, fill NaN with median
+        if col in ['Vitamin_Intake', 'Mineral_Intake']:
+            # Check if the column has only NaN values
+            if data[col].isna().sum() == len(data):
+                # Drop columns if all values are NaN
+                print(f"Dropping column {col} as it contains only NaN values.")
+                data.drop(columns=[col], inplace=True)
+            else:
+                data[col].fillna(data[col].median(), inplace=True)
+        else:
+            data[col].fillna(data[col].median(), inplace=True)
+
+# Update numeric_cols after dropping columns
+numeric_cols = [col for col in numeric_cols if col in data.columns]
+
+# Feature Engineering: Create new features
+# BMI Calculation
+data['BMI'] = data['Weight'] / (data['Height'] / 100) ** 2
+
+# Exercise intensity feature
+data['Exercise_Intensity'] = data['Calories_Burned'] / (data['Exercise_Duration'] + 1)
+
+# Macronutrient ratios
+data['Protein_Carb_Ratio'] = data['Protein_Goal'] / (data['Carb_Goal'] + 1)
+data['Fat_Carb_Ratio'] = data['Fat_Goal'] / (data['Carb_Goal'] + 1)
+
+# Update feature list with new features
+    print(f"R²: {r2:.4f}\n")
