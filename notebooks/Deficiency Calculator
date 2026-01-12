@@ -1,0 +1,51 @@
+# Function to calculate the deficiency report based on user goals and total intake
+def generate_deficiency_report_from_goals(user_goals, total_intake):
+    report = {}
+    for nutrient, goal_value in user_goals.items():
+        total_value = total_intake.get(nutrient, 0)
+        deficiency = goal_value - total_value
+        report[nutrient] = {
+            "User Goal": round(goal_value, 2),
+            "Total Intake": round(total_value, 2),
+            "Deficiency (or Excess)": round(deficiency, 2)
+        }
+    return report
+
+# User Goals (nutritional targets)
+user_goals = {
+    "Caloric_Goal": 500,
+    "Protein_Goal": 30.0,
+    "Carb_Goal": 70.0,
+    "Fat_Goal": 30.0,
+    "Fiber_Goal": 10.0,
+    "Sugar_Goal": 8.0,
+    "Sodium_Goal": 900.0
+}    
+class_mappings = {
+    "Calories": "Caloric_Goal",
+    "Protein (g)": "Protein_Goal",
+    "Carbs (g)": "Carb_Goal",
+    "Fat (g)": "Fat_Goal",
+    "Fiber (g)": "Fiber_Goal",
+    "Sugar (g)": "Sugar_Goal",
+    "Sodium (mg)": "Sodium_Goal"
+}
+
+# Generate the deficiency report
+deficiency_report = generate_deficiency_report_from_goals(user_goals, total_intake)
+
+# Display the report
+print("\nDeficiency Report (Based on User Goals):")
+for nutrient, details in deficiency_report.items():
+    print(f"{nutrient}:")
+    print(f"  User Goal: {details['User Goal']}")
+    print(f"  Total Intake: {details['Total Intake']}")
+    print(f"  Deficiency (or Excess): {details['Deficiency (or Excess)']}")
+
+
+user_input = pd.DataFrame([{
+    'Age': 40, 'Weight': 95, 'Height': 165, 'Caloric_Goal': 500, 'Carb_Goal': 280, 
+    'Protein_Goal': 180, 'Fat_Goal': 85, 'Exercise_Duration': 50, 'Calories_Burned': 400, 
+    'Water_Intake': 3.0, 'Sleep_Duration': 6, 'Vitamin_Intake': 1.8, 'Mineral_Intake': 2.2, 
+    'Activity_Level': 'Moderately Active', 'Meal_Type': 'Breakfast', 
+    'Chronic_Conditions': 'None', 'Allergies': 'None', 'Medications': 'None', 'Fiber_Goal': 10.0, 'Sugar_Goal': 8.0, 'Sodium_Goal': 900.0}])
