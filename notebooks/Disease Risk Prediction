@@ -1,0 +1,67 @@
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.compose import ColumnTransformer
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report
+from imblearn.over_sampling import RandomOverSampler
+
+# Add derived features
+def add_features(data):
+    print("=== Adding Features ===")
+    # Calculate BMI
+    data['BMI'] = data['Weight'] / ((data['Height'] / 100) ** 2)
+
+    # Encode activity levels
+    activity_mapping = {
+        'Sedentary': 1,
+        'Lightly Active': 2,
+        'Moderately Active': 3,
+        'Very Active': 4
+    }
+    data['Activity_Level_Encoded'] = data['Activity_Level'].map(activity_mapping)
+    data['Activity_Level_Encoded'] = data['Activity_Level_Encoded'].fillna(1)
+
+    # Calories per Activity Level
+    data['Calories_per_Activity'] = data['Calories'] / data['Activity_Level_Encoded']
+    data['Calories_per_Activity'] = data['Calories_per_Activity'].fillna(data['Calories_per_Activity'].mean())
+
+    return data
+
+data = add_features(data)
+
+# Define features and targets
+features = ['Age', 'Weight', 'Height', 'Calories', 'Carbohydrates', 'Proteins', 'Fats',
+            'Sleep_Duration', 'Water_Intake', 'BMI', 'Calories_per_Activity']
+conditions = ['Diabetes', 'High Cholesterol', 'Hypertension', 'Obesity', 'Arthritis', 'Asthma']
+
+X = data[features]
+y = pd.DataFrame()
+for condition in conditions:
+    y[condition] = data['Chronic_Conditions'].apply(lambda x: 1 if condition in str(x) else 0)
+
+# Preprocess features
+preprocessor = ColumnTransformer(transformers=[
+    ('num', StandardScaler(), features)
+])
+
+X_transformed = preprocessor.fit_transform(X)
+
+# Train class-specific models
+def train_class_specific_models(X, y, conditions):
+    print("=== Training Class-Specific Models ===")
+    reports = {}
+
+    for idx, condition in enumerate(conditions):
+        print(f"\n--- Condition: {condition} ---")
+        
+        # Extract features and target for this condition
+        y_condition = y.iloc[:, idx]
+        
+        # Apply oversampling
+        ros = RandomOverSampler(random_state=42)
+        X_resampled, y_resampled = ros.fit_resample(X, y_condition)
+        
+        # Split into train and test sets
+        X_train, X_test, y_train, y_test = train_test_split(
+class_specific_reports = train_class_specific_models(X_transformed, y, conditions)
