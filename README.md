@@ -60,4 +60,7 @@ This project combines **predictive modeling, deficiency-based adjustments, and r
 
 ---
 
-## 📂 Project Structure
+## ⚙️ Installation
+
+```bash
+pip install -r requirements.txt
